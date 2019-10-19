@@ -168,6 +168,16 @@ static TensorIterator make_reduction(
   return TensorIterator::reduce_op(viewed_result1, viewed_result2, self.to(dtype));
 }
 
+Tensor _cumsum(const Tensor& self, int64_t dim) {
+  Tensor result;
+  return _cumsum_out(result, self, dim);
+}
+
+Tensor _cumsum_out(Tensor& result, const Tensor& self, int64_t dim) {
+  TORCH_CHECK(dim >= 0 && dim < self.dim(), "dimension ", dim, " out of range.");
+  result.resize_as_(self);
+}
+
 Tensor cumsum(const Tensor& self, int64_t dim, c10::optional<ScalarType> dtype) {
   auto result = [&]() {
 #ifdef BUILD_NAMEDTENSOR
