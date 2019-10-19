@@ -32,6 +32,7 @@ DEFINE_DISPATCH(min_values_stub);
 DEFINE_DISPATCH(max_values_stub);
 DEFINE_DISPATCH(argmax_stub);
 DEFINE_DISPATCH(argmin_stub);
+DEFINE_DISPATCH(cumsum_stub);
 
 static inline Tensor integer_upcast(const Tensor& self, optional<ScalarType> dtype) {
   ScalarType scalarType = self.scalar_type();
@@ -169,7 +170,7 @@ static TensorIterator make_reduction(
 }
 
 Tensor _cumsum(const Tensor& self, int64_t dim) {
-  Tensor result;
+  Tensor result = at::empty({0}, self.options());
   return at::native::_cumsum_out(result, self, dim);
 }
 
