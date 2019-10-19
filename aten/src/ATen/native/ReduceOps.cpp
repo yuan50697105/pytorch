@@ -170,7 +170,7 @@ static TensorIterator make_reduction(
 
 Tensor _cumsum(const Tensor& self, int64_t dim) {
   Tensor result;
-  return _cumsum_out(result, self, dim);
+  return at::native::_cumsum_out(result, self, dim);
 }
 
 Tensor _cumsum_out(Tensor& result, const Tensor& self, int64_t dim) {
@@ -183,7 +183,7 @@ Tensor cumsum(const Tensor& self, int64_t dim, c10::optional<ScalarType> dtype) 
 #ifdef BUILD_NAMEDTENSOR
     NoNamesGuard guard;
 #endif
-    return at::_cumsum(integer_upcast(self, dtype), dim);
+    return at::native::_cumsum(integer_upcast(self, dtype), dim);
   }();
 #ifdef BUILD_NAMEDTENSOR
   namedinference::propagate_names_for_reduction(result, self, dim, /*keepdim=*/true);
@@ -847,10 +847,10 @@ Tensor& all_out(Tensor& result, const Tensor &self, Dimname dim, bool keepdim) {
   reportNYIDimnameOverload("all");
 }
 Tensor cumsum(const Tensor& self, Dimname dim, c10::optional<ScalarType> dtype) {
-  return at::cumsum(self, dimname_to_position(self, dim), dtype);
+  return at::native::cumsum(self, dimname_to_position(self, dim), dtype);
 }
 Tensor& cumsum_out(Tensor& result, const Tensor& self, Dimname dim, c10::optional<ScalarType> dtype) {
-  return at::cumsum_out(result, self, dimname_to_position(self, dim), dtype);
+  return at::native::cumsum_out(result, self, dimname_to_position(self, dim), dtype);
 }
 Tensor cumprod(const Tensor& self, Dimname dim, c10::optional<ScalarType> dtype) {
   return at::cumprod(self, dimname_to_position(self, dim), dtype);
