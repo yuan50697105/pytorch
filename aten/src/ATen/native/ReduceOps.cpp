@@ -177,6 +177,16 @@ Tensor _cumsum(const Tensor& self, int64_t dim) {
 Tensor _cumsum_out(Tensor& result, const Tensor& self, int64_t dim) {
   TORCH_CHECK(dim >= 0 && dim < self.dim(), "dimension ", dim, " out of range.");
   result.resize_as_(self);
+  Tensor in = self.select(dim, 0);
+  auto iter = TensorIterator();
+  iter.add_input(in);
+  iter.add_output(result);
+  iter.build();
+  accscalar_t cumsum = 0;
+  at::native::cpu_kernel(iter, [&](const scalar_t g) -> {
+      cumsum += g;
+      return cumsum;
+    });
 }
 
 Tensor cumsum(const Tensor& self, int64_t dim, c10::optional<ScalarType> dtype) {
