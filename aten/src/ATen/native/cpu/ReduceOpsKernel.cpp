@@ -201,6 +201,12 @@ static void argmin_kernel_impl(TensorIterator &iter) {
 
 static void cumsum_kernel_impl(TensorIterator &iter) {
   // TODO
+  AT_DISPATCH_ALL_TYPES(iter.dtype(), "cumsum", [&] {
+      binary_kernel_reduce(
+                           iter,
+                           ArgMinOps<scalar_t>{},
+                           std::pair<scalar_t, int64_t>(upper_bound<scalar_t>(), -1));
+    });
 }
 
 }  // anonymous namespace

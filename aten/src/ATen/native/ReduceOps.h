@@ -12,7 +12,6 @@ namespace at { namespace native {
 
 using reduce_fn = void(*)(TensorIterator &);
 
-DECLARE_DISPATCH(reduce_fn, cumsum_stub);
 DECLARE_DISPATCH(reduce_fn, sum_stub);
 DECLARE_DISPATCH(reduce_fn, prod_stub);
 DECLARE_DISPATCH(reduce_fn, mean_stub);
@@ -22,6 +21,7 @@ DECLARE_DISPATCH(reduce_fn, min_values_stub);
 DECLARE_DISPATCH(reduce_fn, max_values_stub);
 DECLARE_DISPATCH(reduce_fn, argmax_stub);
 DECLARE_DISPATCH(reduce_fn, argmin_stub);
+DECLARE_DISPATCH(reduce_fn, cumsum_stub);
 
 using reduce_std_var_function =
   void (*)(TensorIterator&, bool unbiased, bool take_sqrt);
