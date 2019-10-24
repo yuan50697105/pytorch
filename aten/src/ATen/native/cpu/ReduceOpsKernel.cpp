@@ -199,6 +199,10 @@ static void argmin_kernel_impl(TensorIterator &iter) {
   });
 }
 
+static void cumsum_kernel_impl(TensorIterator &iter) {
+  // TODO
+}
+
 }  // anonymous namespace
 
 REGISTER_DISPATCH(sum_stub, &sum_kernel_impl);
@@ -212,5 +216,6 @@ REGISTER_DISPATCH(min_values_stub, &min_values_kernel_impl);
 REGISTER_DISPATCH(max_values_stub, &max_values_kernel_impl);
 REGISTER_DISPATCH(argmax_stub, &argmax_kernel_impl);
 REGISTER_DISPATCH(argmin_stub, &argmin_kernel_impl);
+REGISTER_DISPATCH(cumsum_kernel, &cumsum_kernel_impl);
 
 }}  // namespace at::native
