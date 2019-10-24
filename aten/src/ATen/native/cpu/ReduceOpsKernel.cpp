@@ -2,6 +2,7 @@
 #include <iterator>
 #include <algorithm>
 #include <limits>
+#include <iostream>
 
 #include <ATen/Dispatch.h>
 #include <ATen/cpu/vec256/vec256.h>
@@ -200,13 +201,15 @@ static void argmin_kernel_impl(TensorIterator &iter) {
 }
 
 static void cumsum_kernel_impl(TensorIterator &iter) {
-  // TODO
-  AT_DISPATCH_ALL_TYPES(iter.dtype(), "cumsum", [&] {
-      binary_kernel_reduce(
-                           iter,
-                           ArgMinOps<scalar_t>{},
-                           std::pair<scalar_t, int64_t>(upper_bound<scalar_t>(), -1));
-    });
+    AT_DISPATCH_ALL_TYPES(
+      iter.dtype(), "cumsum", [&] {
+        scalar_t cumsum = 0;
+        cpu_kernel(iter,
+                   [&](scalar_t i) {
+                     cumsum += i;
+                     return cumsum;
+                   });
+      });
 }
 
 }  // anonymous namespace
@@ -222,6 +225,6 @@ REGISTER_DISPATCH(min_values_stub, &min_values_kernel_impl);
 REGISTER_DISPATCH(max_values_stub, &max_values_kernel_impl);
 REGISTER_DISPATCH(argmax_stub, &argmax_kernel_impl);
 REGISTER_DISPATCH(argmin_stub, &argmin_kernel_impl);
-REGISTER_DISPATCH(cumsum_kernel, &cumsum_kernel_impl);
+REGISTER_DISPATCH(cumsum_stub, &cumsum_kernel_impl);
 
 }}  // namespace at::native

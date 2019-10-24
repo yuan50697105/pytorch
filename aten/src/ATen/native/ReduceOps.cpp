@@ -11,6 +11,7 @@
 #include <ATen/NamedTensorUtils.h>
 #include <ATen/core/EnableNamedTensor.h>
 
+#include <iostream>
 #include <algorithm>
 #include <functional>
 #include <limits>
@@ -177,18 +178,13 @@ Tensor _cumsum(const Tensor& self, int64_t dim) {
 Tensor& _cumsum_out(Tensor& result, const Tensor& self, int64_t dim) {
   TORCH_CHECK(dim >= 0 && dim < self.dim(), "dimension ", dim, " out of range.");
   result.resize_as_(self);
-  Tensor in = self.select(dim, 0);
   auto iter = TensorIterator();
-  iter.add_input(in);
   iter.add_output(result);
+  iter.add_input(self);
   iter.build();
   cumsum_stub(iter.device_type(), iter);
-  // ScalarType scalarType = self.scalar_type();
-  // Scalar cumsum = 0;
-  // cpu_serial_kernel(iter, [&](const Scalar g) -> {
-  //     cumsum += g;
-  //     return cumsum;
-  //   });
+
+  return result;
 }
 
 Tensor cumsum(const Tensor& self, int64_t dim, c10::optional<ScalarType> dtype) {
