@@ -32,7 +32,6 @@ DEFINE_DISPATCH(min_values_stub);
 DEFINE_DISPATCH(max_values_stub);
 DEFINE_DISPATCH(argmax_stub);
 DEFINE_DISPATCH(argmin_stub);
-DEFINE_DISPATCH(cumsum_stub);
 
 static inline Tensor integer_upcast(const Tensor& self, optional<ScalarType> dtype) {
   ScalarType scalarType = self.scalar_type();
@@ -174,7 +173,7 @@ Tensor _cumsum(const Tensor& self, int64_t dim) {
   return at::native::_cumsum_out(result, self, dim);
 }
 
-Tensor _cumsum_out(Tensor& result, const Tensor& self, int64_t dim) {
+Tensor& _cumsum_out(Tensor& result, const Tensor& self, int64_t dim) {
   TORCH_CHECK(dim >= 0 && dim < self.dim(), "dimension ", dim, " out of range.");
   result.resize_as_(self);
   Tensor in = self.select(dim, 0);
@@ -182,8 +181,9 @@ Tensor _cumsum_out(Tensor& result, const Tensor& self, int64_t dim) {
   iter.add_input(in);
   iter.add_output(result);
   iter.build();
-  accscalar_t cumsum = 0;
-  at::native::cpu_kernel(iter, [&](const scalar_t g) -> {
+  ScalarType scalarType = self.scalar_type();
+  Scalar cumsum = 0;
+  cpu_serial_kernel(iter, [&](const Scalar g) -> {
       cumsum += g;
       return cumsum;
     });
