@@ -204,11 +204,17 @@ static void cumsum_kernel_impl(TensorIterator &iter) {
     AT_DISPATCH_ALL_TYPES(
       iter.dtype(), "cumsum", [&] {
         scalar_t cumsum = 0;
-        cpu_kernel(iter,
-                   [&](scalar_t i) {
-                     cumsum += i;
-                     return cumsum;
-                   });
+        if (iter.numel() < internal::GRAIN_SIZE) {
+          at::native::cpu_serial_kernel(iter,
+                                        [&](scalar_t input) {
+                                          cumsum += input;
+                                          return cumsum;
+                                        });
+        }
+        else {
+          // parallel implementation.
+          std::cout << "no parallel impl yet.";
+        }
       });
 }
 
