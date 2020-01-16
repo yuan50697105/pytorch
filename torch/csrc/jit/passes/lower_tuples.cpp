@@ -2,6 +2,7 @@
 #include <c10/util/Exception.h>
 #include <torch/csrc/jit/passes/dead_code_elimination.h>
 #include <torch/csrc/jit/passes/lower_tuples.h>
+#include <torch/csrc/jit/constants.h>
 
 namespace torch {
 namespace jit {
@@ -75,6 +76,41 @@ void removeTupleNodes(Node* n, bool must_remove_tuples) {
 } // anonymous namespace
 
 static void LowerAllTuples(Block* block);
+
+static void removeTupleConstant(Node * n) {
+  if (!(n->kind() == prim::Constant &&
+        n->output()->type()->cast<TupleType>())) {
+    return;
+  }
+
+  auto g = n->owningGraph();
+  auto tuple_elements = toIValue(n->output()).value().toTuple()->elements();
+  WithInsertPoint insert(n);
+  std::vector<Value*> elements;
+  for (const auto& elem : tuple_elements) {
+    auto constant = insertConstant(*n->owningGraph(), elem);
+    elements.push_back(constant);
+  }
+  auto tuple_type = n->output()->type()->expect<TupleType>();
+  auto tuple_construct = g->insertNode(n->owningGraph()->createTuple(
+      elements, tuple_type->schema() ? tuple_type : nullptr));
+
+  // insert the tuple first before recursing on its elements, so that its
+  // elements will have a use
+  for (Value * elem: elements) {
+    removeTupleConstant(elem->node());
+  }
+
+  n->replaceAllUsesWith(tuple_construct);
+}
+
+void LowerTupleConstants(Block * b) {
+  for (auto it = b->nodes().begin(), end = b->nodes().end();
+       it != end;) {
+    auto n = *it++;
+    removeTupleConstant(n);
+  }
+}
 
 static void VisitNode(Node* n, Node* insert_point) {
   auto& graph = *n->owningGraph();
@@ -183,6 +219,7 @@ static void EnsureNoTuples(Block* block) {
 }
 
 void LowerAllTuples(const std::shared_ptr<Graph>& graph) {
+  LowerTupleConstants(graph->block());
   LowerAllTuples(graph->block());
   EliminateDeadCode(graph->block());
   EnsureNoTuples(graph->block());
