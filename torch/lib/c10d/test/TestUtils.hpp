@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstring>
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -63,6 +64,10 @@ std::string tmppath() {
   return std::string(tmp.data(), tmp.size());
 }
 
+bool isTSANEnabled() {
+  auto s = std::getenv("PYTORCH_TEST_WITH_TSAN");
+  return s && strcmp(s, "1") == 0;
+}
 struct TemporaryFile {
   std::string path;
 
